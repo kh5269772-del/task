@@ -24,7 +24,7 @@ const HOST = process.env.HOST;
 const PASSWORD = process.env.PASSWORD;
 const DATABASE = process.env.DATABASE;
 const CHARSET = process.env.CHARSET;
-const DATABASETASK = process.env.DATABASETASK
+
 
 const db = mysql.createConnection({
    user: USER,
@@ -248,22 +248,6 @@ app.post("/change_avatar", uploads.single("avatar"), (req, res) => {
 
 
 
-const dbi = mysql.createConnection({
-   user: USER,
-   host: HOST,
-   password: PASSWORD,
-   database: DATABASETASK,
-   charset: CHARSET
-})
-
-
-dbi.connect((error) => {
-   if (error) {
-      return console.log(error)
-   }
-   console.log('mysql task connect...')
-})
-
 
 
 app.post("/add_item", (req, res) => {
@@ -271,7 +255,7 @@ app.post("/add_item", (req, res) => {
    const { title, descripiton, priority, date, completed, userid } = req.body
 
 
-   dbi.query("INSERT INTO item SET?", {
+   db.query("INSERT INTO item SET?", {
       title: title,
       descripiton: descripiton,
       priority: priority || 'low',
@@ -295,7 +279,7 @@ app.get("/show_item_all", (req, res) => {
 
    const userId = req.query['id']
 
-   dbi.query("SELECT * FROM item WHERE userid=? ORDER BY id ASC", [userId], (error, results) => {
+   db.query("SELECT * FROM item WHERE userid=? ORDER BY id ASC", [userId], (error, results) => {
       if (error) {
          return console.log(error)
       }
@@ -308,7 +292,7 @@ app.get("/show_item_all", (req, res) => {
 app.get("/show_item_completed", (req, res) => {
    const userId = req.query['id']
    console.log(userId)
-   dbi.query("SELECT * FROM item WHERE userid=? AND completed = 1 ORDER BY id ASC", [userId], (error, results) => {
+   db.query("SELECT * FROM item WHERE userid=? AND completed = 1 ORDER BY id ASC", [userId], (error, results) => {
       if (error) {
          console.log(error)
          res.json({ error: error })
@@ -328,7 +312,7 @@ app.get("/show_item_completed", (req, res) => {
 app.get("/show_item_pending", (req, res) => {
    const userId = req.query['id']
    console.log(userId)
-   dbi.query("SELECT * FROM item WHERE userid=? AND completed = 0 ORDER BY id ASC", [userId], (error, results) => {
+   db.query("SELECT * FROM item WHERE userid=? AND completed = 0 ORDER BY id ASC", [userId], (error, results) => {
       if (error) {
          console.log(error)
          res.json({ error: error })
@@ -344,7 +328,7 @@ app.get("/show_item_pending", (req, res) => {
 app.get("/show_item_overdue", (req, res) => {
    const userId = req.query['id']
    console.log(userId)
-   dbi.query("SELECT * FROM item WHERE userid=? AND completed = 0 AND date < CURDATE() ORDER BY id ASC", [userId], (error, results) => {
+   db.query("SELECT * FROM item WHERE userid=? AND completed = 0 AND date < CURDATE() ORDER BY id ASC", [userId], (error, results) => {
       if (error) {
          console.log(error)
          res.json({ error: error })
@@ -364,19 +348,19 @@ app.get("/data/number", (req, res) => {
    let all;
    let completed;
    let pending;
-   dbi.query("SELECT * FROM item WHERE userid=? ORDER BY id ASC", [userId], (error, results) => {
+   db.query("SELECT * FROM item WHERE userid=? ORDER BY id ASC", [userId], (error, results) => {
       if (error) {
          return console.log(error)
       }
       all = results.length
 
-      dbi.query("SELECT * FROM item WHERE userid=? AND completed = 1 ORDER BY id ASC", [userId], (error, results) => {
+      db.query("SELECT * FROM item WHERE userid=? AND completed = 1 ORDER BY id ASC", [userId], (error, results) => {
          if (error) {
             return console.log(error)
          }
          completed = results.length
       })
-      dbi.query("SELECT * FROM item WHERE userid=? AND completed = 0 ORDER BY id ASC", [userId], (error, results) => {
+      db.query("SELECT * FROM item WHERE userid=? AND completed = 0 ORDER BY id ASC", [userId], (error, results) => {
          if (error) {
             return console.log(error)
          }
@@ -411,7 +395,7 @@ app.get("/data/number", (req, res) => {
 app.post("/delete_item", (req, res) => {
    const id = req.body['id']
 
-   dbi.query("DELETE FROM item WHERE id=?", [id], (error, resultes) => {
+   db.query("DELETE FROM item WHERE id=?", [id], (error, resultes) => {
       if (error) {
          return console.log(error)
       }
@@ -425,7 +409,7 @@ app.post("/update_item", (req, res) => {
 
    const { title, descripiton, priority, date, completed, userid, id } = req.body
 
-   dbi.query("UPDATE item SET title=?, descripiton=?, priority=?, date=?, completed=? WHERE id=? ",
+   db.query("UPDATE item SET title=?, descripiton=?, priority=?, date=?, completed=? WHERE id=? ",
       [title,
          descripiton,
          priority || 'low',
